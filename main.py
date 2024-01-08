@@ -42,9 +42,43 @@ def mainWin():
 
 def register():
     win.HideAll()
-    insertData(conn, win.getTextFieldValue(newUsernamedTextField), win.getTextFieldValue(newPasswordTextField))
-    win.addText("Registered user", 25, "Center")
-    win.addButton("Main window", mainWin)
+    DONT = False
+    usernameRows = selectRow(conn, "username")
+    for row in usernameRows:
+        if row[0] == win.getTextFieldValue(newUsernamedTextField):
+            DONT = True
+            print("User already exists")
+
+
+    for char in win.getTextFieldValue(newUsernamedTextField):
+        if char in "qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM_-.":
+            print("Character allowed")
+        elif char == None:
+            DONT = True
+        else:
+            DONT = True
+            print("Character not allowed")
+    for char in win.getTextFieldValue(newPasswordTextField):
+        if char in "qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM_-.":
+            print("Character allowed")
+        elif char == None:
+            DONT = True
+        else:
+            DONT = True
+            print("Character not allowed")        
+
+    rows = selectRow(conn, "username")
+    for row in rows:
+        if row[0] == win.getTextFieldValue(newPasswordTextField):
+            DONT = True
+    if DONT == False:
+        insertData(conn, win.getTextFieldValue(newUsernamedTextField), win.getTextFieldValue(newPasswordTextField))
+        win.addText("Registered user", 25, "Center")
+        win.addButton("Main window", mainWin)
+    else:
+        win.addText("Something went wrong", 25, "Center-top")
+        win.addButton("Retry", registerWindow)
+        win.addButton("Main window", mainWin)
 
 def registerWindow():
     win.HideAll()
@@ -61,27 +95,54 @@ def registerWindow():
 
 def login():
     win.HideAll()
-    usernameRows = selectRow(conn, "username")
-    userExists = False
-    for username in usernameRows:
-        if username[0] == win.getTextFieldValue(usernameTextField):
-            print("User found")
-            userExists = True
-            break
-    if userExists == False:
-        win.addText("User doesn't exist", 25, "Center")
-        win.addButton("Retry", loginWindow)
-        win.addButton("Main window", mainWin)
-    if userExists:
-        realPasswords = executeCommand(conn, f"SELECT password FROM data WHERE username = '{win.getTextFieldValue(usernameTextField)}'")
-        passwords = [row[0] for row in realPasswords]
-        if win.getTextFieldValue(passwordTextField) in passwords:
-            win.addText("You have logged in", 25, "Center-top")
-            win.addButton("Log out", mainWin)
+    DONT = False
+    for char in win.getTextFieldValue(usernameTextField):
+        if char in "qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM_-.":
+            print("Character allowed")
+        elif char == None:
+            DONT = True
         else:
-            win.addText("Incorrect password", 25, "Center-top")
+            DONT = True
+            print("Character not allowed")
+    for char in win.getTextFieldValue(passwordTextField):
+        if char in "qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM_-.":
+            print("Character allowed")
+        elif char == None:
+            DONT = True
+        else:
+            DONT = True
+            print("Character not allowed")  
+    usernameRows = selectRow(conn, "username")
+
+    for row1 in usernameRows:
+        if row1[0] == win.getTextFieldValue(usernameTextField):
+            DONT = True
+
+    if DONT == False:
+        userExists = False
+        for username in usernameRows:
+            if username[0] == win.getTextFieldValue(usernameTextField):
+                print("User found")
+                userExists = True
+                break
+        if userExists == False:
+            win.addText("User doesn't exist", 25, "Center")
             win.addButton("Retry", loginWindow)
             win.addButton("Main window", mainWin)
+        if userExists:
+            realPasswords = executeCommand(conn, f"SELECT password FROM data WHERE username = '{win.getTextFieldValue(usernameTextField)}'")
+            passwords = [row[0] for row in realPasswords]
+            if win.getTextFieldValue(passwordTextField) in passwords:
+                win.addText("You have logged in", 25, "Center-top")
+                win.addButton("Log out", mainWin)
+            else:
+                win.addText("Incorrect password", 25, "Center-top")
+                win.addButton("Retry", loginWindow)
+                win.addButton("Main window", mainWin)
+    else:
+        win.addText("Something went wrong", 25, "Center-top")
+        win.addButton("Retry", loginWindow)
+        win.addButton("Main window", mainWin)
 
 
 def loginWindow():
@@ -104,4 +165,3 @@ conn = createConnection("data.db")
 win.addButton("Register", registerWindow)
 win.addButton("Log in", loginWindow)
 win.init()
-
